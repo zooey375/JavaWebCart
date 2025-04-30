@@ -4,6 +4,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 
 import cart.dao.OrderDAO;
@@ -69,14 +70,55 @@ public class OrderDAOImpl extends BaseDao implements OrderDAO {
 
 	@Override
 	public List<Order> findAllOrdersByUserId(Integer userId) {
-		// TODO Auto-generated method stub
-		return null;
+		List<Order> orders = new ArrayList<>();
+		String sql = "select order_id, user_id, order_date from `order` where user_id = ?";
+		try(PreparedStatement pstmt = conn.prepareStatement(sql)) {
+			pstmt.setInt(1, userId);
+			
+			try(ResultSet rs = pstmt.executeQuery()) {
+				while (rs.next()) {
+					// Mapping
+					Order order = new Order();
+					order.setOrderId(rs.getInt("order_id"));
+					order.setUserId(rs.getInt("user_id"));
+					order.setOrderDate(rs.getDate("order_date"));
+					// 注入到 orders 集合中
+					orders.add(order);
+				}
+			}
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return orders;
 	}
 
 	@Override
 	public List<OrderItem> findAllOrderItemsByOrderId(Integer orderId) {
-		// TODO Auto-generated method stub
-		return null;
+		List<OrderItem> items = new ArrayList<>();
+		String sql = "select item_id, order_id, product_id, quantity from order_item where order_id = ?";
+		
+		try(PreparedStatement pstmt = conn.prepareStatement(sql)) {
+			pstmt.setInt(1, orderId);
+			
+			try(ResultSet rs = pstmt.executeQuery()) {
+				while (rs.next()) {
+					// Mapping
+					OrderItem item = new OrderItem();
+					item.setItemId(rs.getInt("item_id"));
+					item.setOrderId(rs.getInt("order_id"));
+					item.setProductId(rs.getInt("product_id"));
+					item.setQuantity(rs.getInt("quantity"));
+					// 注入到 items 集合中
+					items.add(item);
+				}
+			}
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		return items;
 	}
 
 }
